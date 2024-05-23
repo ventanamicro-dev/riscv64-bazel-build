@@ -1,0 +1,25 @@
+commit 0bb802f0cc1ed90250296704d705af8dc337c28e
+Author: Your Name <you@example.com>
+Date:   Tue May 14 00:35:26 2024 -0400
+
+    RISCV support
+
+diff --git a/python/versions.bzl b/python/versions.bzl
+index b4c837e..08882d3 100644
+--- a/python/versions.bzl
++++ b/python/versions.bzl
+@@ -536,6 +536,14 @@ PLATFORMS = {
+         # repository_ctx.execute(["uname", "-m"]).stdout.strip()
+         arch = "ppc64le",
+     ),
++    "riscv64-unknown-linux-gnu": struct(
++        compatible_with = [
++            "@platforms//os:linux",
++            "@platforms//cpu:riscv64",
++        ],
++        os_name = LINUX_NAME,
++        arch = "riscv64",
++    ),
+     "s390x-unknown-linux-gnu": struct(
+         compatible_with = [
+             "@platforms//os:linux",
