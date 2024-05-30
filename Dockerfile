@@ -11,9 +11,11 @@ FROM riscv64/ubuntu:22.04
 RUN apt-get update && apt-get -y install openjdk-21-jdk build-essential zip unzip wget git
 
 # We need to fix the rules_python package before we start building
-# bazel.  So do that.
+# bazel.  So do that.  Use a specific commit hash for the checkout so
+# we do not get surprise changes in the dependencies
 RUN git clone https://github.com/bazelbuild/rules_python.git
 ADD rules_python.patch /tmp/rules_python.patch
+RUN git checkout df55823a6922324ff0c838bf58ed4acf40154bb8
 RUN cd rules_python && patch -p1 < /tmp/rules_python.patch
 
 # We also need to put a couple header files into a location where they're found
@@ -25,5 +27,5 @@ RUN cp /usr/lib/jvm/java-21-openjdk-riscv64/include/linux/*.h /usr/include
 RUN wget https://github.com/bazelbuild/bazel/releases/download/7.1.2/bazel-7.1.2-dist.zip
 RUN mkdir bazel-7.1.2 && cd bazel-7.1.2 && unzip ../bazel-7.1.2-dist.zip
 ADD bazel.patch /tmp/bazel.patch
-RUN cd bazel-7.1.2 && patch -R -p1 < /tmp/bazel.patch
+RUN cd bazel-7.1.2 && patch -p1 < /tmp/bazel.patch
 RUN cd bazel-7.1.2 && env EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk" bash ./compile.sh
