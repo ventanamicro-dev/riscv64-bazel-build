@@ -1,0 +1,21 @@
+# In theory changing the version number here should be all we
+# need to do to get a binary for a particular Ubuntu release.
+FROM riscv64/ubuntu:23.04
+
+# This has been tested for all the 6.x.0 releases and presumably
+# would work for any 6.x.y release.  I typicaly adjust this one
+# the command line rather than in the Dockerfile via:
+# --build-arg=BAZEL_VERSION=6.3.0
+ARG BAZEL_VERSION="6.0.0"
+
+# Core dependencies needed to bootstrap Bazel.  Note the
+# version of openjdk is important
+RUN apt-get update && apt-get -y install openjdk-11-jdk build-essential zip unzip wget git
+
+# Now download bazel's dist file and patch it to deal with an
+# out of memory situation and two Java faults
+RUN wget https://github.com/bazelbuild/bazel/releases/download/$BAZEL_VERSION/bazel-$BAZEL_VERSION-dist.zip
+RUN mkdir bazel-$BAZEL_VERSION && cd bazel-$BAZEL_VERSION && unzip ../bazel-$BAZEL_VERSION-dist.zip
+ADD bazel-6.patch /tmp/bazel-6.patch
+RUN cd bazel-$BAZEL_VERSION && patch -R -p1 < /tmp/bazel-6.patch
+RUN cd bazel-$BAZEL_VERSION && env EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk" bash ./compile.sh

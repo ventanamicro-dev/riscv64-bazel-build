@@ -1,0 +1,46 @@
+diff -Nrup bazel-6.1.0/scripts/bootstrap/compile.sh x/scripts/bootstrap/compile.sh
+--- bazel-6.1.0/scripts/bootstrap/compile.sh	2024-06-21 22:47:58.403884345 +0000
++++ x/scripts/bootstrap/compile.sh	1980-01-01 00:00:00.000000000 +0000
+@@ -448,7 +448,6 @@ function run_bazel_jar() {
+       -XX:HeapDumpPath=${OUTPUT_DIR} \
+       -Djava.util.logging.config.file=${OUTPUT_DIR}/javalog.properties \
+       ${JNI_FLAGS} \
+-      --add-opens java.base/java.lang=ALL-UNNAMED \
+       -jar ${ARCHIVE_DIR}/libblaze.jar \
+       --batch \
+       --install_base=${ARCHIVE_DIR} \
+diff -Nrup bazel-6.1.0/tools/build_rules/java_rules_skylark.bzl x/tools/build_rules/java_rules_skylark.bzl
+--- bazel-6.1.0/tools/build_rules/java_rules_skylark.bzl	2024-06-21 22:19:47.239124148 +0000
++++ x/tools/build_rules/java_rules_skylark.bzl	1980-01-01 00:00:00.000000000 +0000
+@@ -67,7 +67,7 @@ def _java_library_impl(ctx):
+ 
+     if ctx.files.srcs or ctx.files.srcjars:
+         cmd += "%s/bin/javac" % java_runtime.java_home
+-        cmd += " -J-Xmx200g " + " ".join(javac_options)
++        cmd += " " + " ".join(javac_options)
+         if compile_time_jars:
+             cmd += " -classpath '" + cmd_helper.join_paths(ctx.configuration.host_path_separator, compile_time_jars) + "'"
+         cmd += " -d " + build_output + files + "\n"
+diff -Nrup bazel-6.1.0/src/main/java/com/google/devtools/build/lib/actions/ParameterFile.java x/src/main/java/com/google/devtools/build/lib/actions/ParameterFile.java
+--- bazel-6.1.0/src/main/java/com/google/devtools/build/lib/actions/ParameterFile.java	2024-06-21 23:09:42.746765566 +0000
++++ x/src/main/java/com/google/devtools/build/lib/actions/ParameterFile.java	1980-01-01 00:00:00.000000000 +0000
+@@ -116,6 +116,11 @@ public class ParameterFile {
+ 
+   private static void writeContent(
+       OutputStream outputStream, Iterable<String> arguments, Charset charset) throws IOException {
++    if (charset.equals(ISO_8859_1)) {
++      writeContentLatin1(outputStream, arguments);
++    } else if (charset.equals(UTF_8)) {
++      writeContentUtf8(outputStream, arguments);
++    } else {
+       // Generic charset support
+       OutputStreamWriter out = new OutputStreamWriter(outputStream, charset);
+       for (String line : arguments) {
+@@ -123,6 +128,7 @@ public class ParameterFile {
+         out.write('\n');
+       }
+       out.flush();
++    }
+   }
+ 
+   /**
