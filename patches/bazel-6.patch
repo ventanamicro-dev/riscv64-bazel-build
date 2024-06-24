@@ -16,7 +16,7 @@ diff -Nrup bazel-6.1.0/tools/build_rules/java_rules_skylark.bzl x/tools/build_ru
  
      if ctx.files.srcs or ctx.files.srcjars:
          cmd += "%s/bin/javac" % java_runtime.java_home
--        cmd += " -J-Xmx200g " + " ".join(javac_options)
+-        cmd += " -J-ms200g -J-Xmx200g " + " ".join(javac_options)
 +        cmd += " " + " ".join(javac_options)
          if compile_time_jars:
              cmd += " -classpath '" + cmd_helper.join_paths(ctx.configuration.host_path_separator, compile_time_jars) + "'"

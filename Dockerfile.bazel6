@@ -10,7 +10,9 @@ ARG BAZEL_VERSION="6.0.0"
 
 # Core dependencies needed to bootstrap Bazel.  Note the
 # version of openjdk is important
-RUN apt-get update && apt-get -y install openjdk-11-jdk build-essential zip unzip wget git
+RUN apt-get update && apt-get -y install openjdk-11-jdk build-essential zip unzip wget git gcc-10 g++-10
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 50
+RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 50
 
 # Now download bazel's dist file and patch it to deal with an
 # out of memory situation and two Java faults
@@ -19,3 +21,5 @@ RUN mkdir bazel-$BAZEL_VERSION && cd bazel-$BAZEL_VERSION && unzip ../bazel-$BAZ
 ADD bazel-6.patch /tmp/bazel-6.patch
 RUN cd bazel-$BAZEL_VERSION && patch -R -p1 < /tmp/bazel-6.patch
 RUN cd bazel-$BAZEL_VERSION && env EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk" bash ./compile.sh
+RUN sleep 6000
+RUN cp bazel-$BAZEL_VERSION/output/bazel-* /tmp
